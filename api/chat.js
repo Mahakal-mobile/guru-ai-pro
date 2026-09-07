@@ -1,6 +1,7 @@
 const DEFAULT_MODELS = [
-  process.env.GEMINI_MODEL || "gemini-1.5-flash",
-  "gemini-1.5-pro"
+  "gemini-1.5-flash-latest",
+  "gemini-1.5-pro-latest",
+  "gemini-1.5-flash"
 ];
 
 const API_BASE =
