@@ -1,5 +1,6 @@
 const DEFAULT_MODELS = [
   process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-2.5-flash"
 ];
@@ -23,9 +24,9 @@ You are especially useful for:
 - Camera/image inspection
 - PDF and document analysis
 - General questions
-- Current information using web search when available
+- Current information using Google Search when enabled
 
-When an image, PDF, or document is supplied, inspect it carefully before answering.
+When an image or PDF is supplied, inspect it carefully before answering.
 
 For current or changing information, use Google Search grounding when available.
 
@@ -46,13 +47,7 @@ function sleep(ms) {
 }
 
 function isRetryable(status) {
-  return (
-    status === 429 ||
-    status === 500 ||
-    status === 502 ||
-    status === 503 ||
-    status === 504
-  );
+  return [429, 500, 502, 503, 504].includes(status);
 }
 
 function buildContents(messages) {
@@ -108,13 +103,10 @@ async function callModel(model, body, apiKey) {
 
     const response = await fetch(url, {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json"
       },
-
       body: JSON.stringify(body),
-
       signal: controller.signal
     });
 
@@ -129,21 +121,22 @@ async function callModel(model, body, apiKey) {
     if (!response.ok) {
       const error = new Error(
         data?.error?.message ||
-          `Gemini HTTP ${response.status}`
+        `Gemini HTTP ${response.status}`
       );
 
       error.status = response.status;
-
       throw error;
     }
 
     return data;
+
   } finally {
     clearTimeout(timer);
   }
 }
 
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed"
@@ -160,7 +153,6 @@ export default async function handler(req, res) {
   }
 
   const messages = req.body?.messages || [];
-
   const enableSearch =
     req.body?.enableSearch !== false;
 
@@ -197,14 +189,16 @@ export default async function handler(req, res) {
 
   let lastError = null;
 
-  // 3.8 → 3.6 → 2.5 automatic fallback
   for (const model of DEFAULT_MODELS) {
+
     for (
       let attempt = 0;
       attempt <= MAX_RETRIES;
       attempt++
     ) {
+
       try {
+
         const data = await callModel(
           model,
           body,
@@ -221,14 +215,12 @@ export default async function handler(req, res) {
           .trim();
 
         const grounding =
-          data?.candidates?.[0]
-            ?.groundingMetadata;
+          data?.candidates?.[0]?.groundingMetadata;
 
         const sources = [];
 
         for (
-          const chunk of
-          grounding?.groundingChunks || []
+          const chunk of grounding?.groundingChunks || []
         ) {
           const web = chunk?.web;
 
@@ -249,10 +241,11 @@ export default async function handler(req, res) {
 
           sources
         });
+
       } catch (error) {
+
         lastError = error;
 
-        // Rate limit / temporary server error
         if (
           isRetryable(error.status) &&
           attempt < MAX_RETRIES
@@ -264,13 +257,8 @@ export default async function handler(req, res) {
           continue;
         }
 
-        // Try next model
-        if (isRetryable(error.status)) {
-          break;
-        }
-
-        // Model unavailable / bad request
         if (
+          isRetryable(error.status) ||
           error.status === 400 ||
           error.status === 404
         ) {
@@ -293,7 +281,7 @@ export default async function handler(req, res) {
 
   return res.status(status).json({
     error:
-      "अभी Gemini की API limit या availability पूरी हो गई है। Guru AI ने automatic retry और fallback models चलाए, लेकिन अभी सभी उपलब्ध रास्ते व्यस्त हैं। थोड़ी देर बाद फिर कोशिश करें।",
+      "अभी Gemini API उपलब्ध नहीं है। Guru AI ने automatic retry और fallback models चलाए, लेकिन सभी प्रयास असफल रहे। थोड़ी देर बाद फिर कोशिश करें।",
 
     detail:
       lastError?.message ||
