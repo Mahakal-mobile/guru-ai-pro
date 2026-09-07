@@ -1,302 +1,1258 @@
 <!doctype html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0b0b0c">
-<meta name="description" content="Guru AI — premium bilingual AI assistant with vision, web grounding and voice.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>Guru AI</title>
+
 <style>
 :root{
-  --bg:#0b0b0c;--panel:#111113;--panel2:#171719;--line:#28282c;
-  --gold:#d6aa55;--gold2:#f0cc7b;--text:#f4f1e9;--muted:#99989b;
-  --green:#55c78a;--red:#ef6b73;--shadow:0 18px 60px rgba(0,0,0,.45);
+  --bg:#070707;
+  --card:#111111;
+  --card2:#161616;
+  --gold:#d6a84f;
+  --gold2:#f0c86b;
+  --text:#f5f5f5;
+  --muted:#999;
+  --border:#292929;
 }
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-button,input,textarea{font:inherit}
-button{color:inherit}
-.app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
-.topbar{height:70px;flex:none;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(11,11,12,.92);backdrop-filter:blur(16px);z-index:10}
-.brand{display:flex;align-items:center;gap:11px;font-family:Georgia,serif;font-size:22px;font-weight:700;letter-spacing:.2px}
-.logo{width:38px;height:38px;border:2px solid var(--gold);border-radius:50%;display:grid;place-items:center;position:relative}
-.logo:after{content:"";width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 16px rgba(214,170,85,.55)}
-.ai{color:var(--gold)}
-.top-actions{display:flex;align-items:center;gap:10px}
-.lang{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:10px 13px;display:flex;gap:8px;align-items:center;cursor:pointer}
-.gear{width:42px;height:42px;border:0;background:transparent;border-radius:12px;font-size:22px;cursor:pointer}
-.gear:hover,.lang:hover{background:#1b1b1e}
-.chat{flex:1;overflow:auto;padding:26px 18px 130px}
-.chat-inner{width:min(900px,100%);margin:auto}
-.welcome{min-height:55vh;display:grid;place-items:center;text-align:center;padding:35px 10px}
-.welcome-card{max-width:640px}
-.welcome h1{font:700 42px Georgia,serif;margin:0 0 12px}
-.welcome h1 span{color:var(--gold)}
-.welcome p{color:var(--muted);line-height:1.65;margin:0 auto 22px;max-width:570px}
-.capabilities{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.cap{border:1px solid var(--line);background:#101012;border-radius:999px;padding:8px 12px;color:#c8c6c1;font-size:12px}
-.msg{display:flex;margin:14px 0;gap:10px}
-.msg.user{justify-content:flex-end}
-.bubble{max-width:min(760px,88%);padding:13px 15px;border-radius:18px;line-height:1.58;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
-.msg.ai .bubble{background:var(--panel2);border:1px solid #252529}
-.msg.user .bubble{background:#211f1b;border:1px solid #6b542d}
-.meta{font-size:10px;color:var(--muted);margin:5px 5px 0}
-.sources{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:7px}
-.sources a{color:var(--gold2);font-size:11px;text-decoration:none;border:1px solid #514127;border-radius:9px;padding:5px 7px}
-.attach{display:flex;gap:8px;align-items:center;background:#101012;border:1px solid var(--line);border-radius:12px;padding:7px;margin-bottom:7px;font-size:11px;color:#c9c5bb}
-.attach button{margin-left:auto;background:transparent;border:0;color:var(--muted);cursor:pointer}
-.typing{display:flex;gap:5px;padding:4px 2px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:b 1s infinite}
-.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
-@keyframes b{0%,80%,100%{opacity:.2;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
-.composer-wrap{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(11,11,12,.98) 28%);z-index:8}
-.composer{width:min(900px,100%);margin:auto;border:1px solid #2c2c30;background:#121214;border-radius:24px;padding:9px;box-shadow:var(--shadow);display:flex;align-items:flex-end;gap:7px}
-.icon{width:43px;height:43px;border:0;background:#1a1a1d;border-radius:50%;cursor:pointer;display:grid;place-items:center;font-size:20px;flex:none}
-.icon:hover{background:#222225}
-.icon.send{background:var(--gold);color:#15110a;font-weight:800}
-.icon.send:hover{background:var(--gold2)}
-.icon.listening{background:#4d1e23;color:#ff9aa0;box-shadow:0 0 0 5px rgba(239,107,115,.08)}
-.textbox{flex:1;min-height:43px;max-height:140px;border:0;outline:0;background:transparent;color:var(--text);resize:none;padding:11px 8px;line-height:1.4}
-.textbox::placeholder{color:#77767a}
-.plus-menu,.settings,.camera-modal{position:fixed;z-index:30}
-.plus-menu{bottom:92px;left:14px;background:#151517;border:1px solid var(--line);border-radius:17px;padding:7px;width:205px;box-shadow:var(--shadow);display:none}
-.plus-menu.show{display:block;animation:pop .16s ease-out}
-@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-.menu-item{display:flex;align-items:center;gap:11px;padding:12px;border:0;background:transparent;width:100%;border-radius:11px;cursor:pointer;text-align:left}
-.menu-item:hover{background:#202023}
-.menu-item small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
-.settings{inset:0;background:rgba(0,0,0,.52);display:none;align-items:stretch;justify-content:flex-end}
-.settings.show{display:flex}
-.drawer{width:min(390px,92vw);height:100%;background:#111113;border-left:1px solid var(--line);padding:18px;box-shadow:var(--shadow);overflow:auto}
-.drawer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.drawer h2{margin:0;font:700 24px Georgia,serif}
-.close{background:#1a1a1c;border:0;border-radius:10px;width:38px;height:38px;cursor:pointer}
-.setting-row{display:flex;justify-content:space-between;align-items:center;padding:15px 2px;border-bottom:1px solid var(--line)}
-.setting-row strong{font-size:14px}.setting-row small{display:block;color:var(--muted);font-size:11px;line-height:1.4;margin-top:4px;max-width:270px}
-.switch{width:48px;height:28px;border-radius:99px;background:#29292d;padding:3px;cursor:pointer;flex:none}
-.switch i{display:block;width:22px;height:22px;border-radius:50%;background:#777;transition:.2s}
-.switch.on{background:#604a25}.switch.on i{transform:translateX(20px);background:var(--gold2)}
-.lang-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.lang-btn{background:#171719;border:1px solid var(--line);padding:10px;border-radius:10px;cursor:pointer}
-.lang-btn.active{border-color:#7b6032;color:var(--gold2)}
-.camera-modal{inset:0;background:#050505;display:none;flex-direction:column}
-.camera-modal.show{display:flex}
-.camera-head{height:62px;padding:0 14px;display:flex;align-items:center;justify-content:space-between}
-#video{width:100%;flex:1;object-fit:cover;background:#000}
-.camera-controls{padding:20px;display:flex;justify-content:center;gap:18px;background:#0c0c0d}
-.capture{width:68px;height:68px;border-radius:50%;border:4px solid #fff;background:var(--gold);box-shadow:0 0 0 5px rgba(255,255,255,.15);cursor:pointer}
-.hidden{display:none!important}
-.status{font-size:10px;color:var(--muted);text-align:center;padding:3px 0 7px}
-.status.ok{color:var(--green)}
-.error{color:#ff9da3}
-@media(max-width:600px){.topbar{height:62px;padding:0 12px}.brand{font-size:19px}.logo{width:34px;height:34px}.welcome h1{font-size:34px}.chat{padding:18px 12px 125px}.bubble{font-size:14px;max-width:91%}.lang{padding:9px 10px}.lang span:last-child{display:none}}
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top,#211806 0%,#0b0b0b 38%,#050505 100%);
+  color:var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.app{
+  max-width:900px;
+  margin:auto;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* HEADER */
+
+header{
+  height:68px;
+  padding:10px 15px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:rgba(7,7,7,.88);
+  backdrop-filter:blur(15px);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(145deg,#f2c867,#9b7024);
+  color:#111;
+  font-size:22px;
+  font-weight:900;
+  box-shadow:0 0 25px rgba(214,168,79,.18);
+}
+
+.title{
+  font-size:20px;
+  font-weight:800;
+  color:var(--gold2);
+}
+
+.subtitle{
+  font-size:10px;
+  color:#777;
+  margin-top:1px;
+}
+
+.top-right{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+select,
+.icon-btn{
+  background:#151515;
+  color:#eee;
+  border:1px solid #333;
+  border-radius:12px;
+  padding:9px;
+}
+
+.icon-btn{
+  width:40px;
+  height:40px;
+  font-size:17px;
+}
+
+/* CHAT */
+
+main{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 14px 125px;
+  scroll-behavior:smooth;
+}
+
+.welcome{
+  text-align:center;
+  padding:48px 12px 25px;
+}
+
+.welcome-logo{
+  width:75px;
+  height:75px;
+  margin:auto;
+  border-radius:25px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(145deg,#f2c867,#8d651f);
+  color:#111;
+  font-size:38px;
+  font-weight:900;
+  box-shadow:0 10px 45px rgba(214,168,79,.2);
+}
+
+.welcome h1{
+  margin:17px 0 7px;
+  font-size:31px;
+}
+
+.welcome h1 span{
+  color:var(--gold2);
+}
+
+.welcome p{
+  color:#999;
+  line-height:1.5;
+  font-size:14px;
+}
+
+.quick{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:20px;
+}
+
+.quick button{
+  background:#121212;
+  border:1px solid #2e2e2e;
+  color:#ddd;
+  border-radius:20px;
+  padding:9px 13px;
+  font-size:12px;
+}
+
+/* MESSAGES */
+
+.msg{
+  max-width:88%;
+  margin:12px 0;
+  padding:13px 15px;
+  border-radius:17px;
+  line-height:1.55;
+  white-space:pre-wrap;
+  word-break:break-word;
+  animation:appear .2s ease;
+}
+
+@keyframes appear{
+  from{
+    opacity:0;
+    transform:translateY(5px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.msg.user{
+  margin-left:auto;
+  background:#2b2110;
+  border:1px solid #5a4319;
+}
+
+.msg.ai{
+  background:#111;
+  border:1px solid #292929;
+}
+
+.msg img{
+  max-width:100%;
+  border-radius:12px;
+  margin-top:8px;
+}
+
+.sources{
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px solid #292929;
+  font-size:11px;
+  color:#888;
+}
+
+.sources a{
+  display:block;
+  color:var(--gold2);
+  text-decoration:none;
+  margin-top:5px;
+}
+
+/* STATUS */
+
+.status{
+  position:fixed;
+  bottom:72px;
+  left:0;
+  right:0;
+  text-align:center;
+  font-size:11px;
+  color:#888;
+  pointer-events:none;
+}
+
+/* COMPOSER */
+
+.composer-wrap{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:20;
+  background:rgba(7,7,7,.94);
+  border-top:1px solid var(--border);
+  backdrop-filter:blur(15px);
+}
+
+.composer{
+  max-width:900px;
+  margin:auto;
+  padding:9px 10px;
+  display:flex;
+  gap:7px;
+  align-items:flex-end;
+}
+
+.circle{
+  width:45px;
+  height:45px;
+  flex-shrink:0;
+  border-radius:14px;
+  background:#151515;
+  color:#ddd;
+  border:1px solid #333;
+  font-size:20px;
+}
+
+textarea{
+  flex:1;
+  min-height:45px;
+  max-height:130px;
+  resize:none;
+  background:#151515;
+  border:1px solid #333;
+  border-radius:14px;
+  color:white;
+  padding:12px;
+  font-size:15px;
+  outline:none;
+}
+
+textarea:focus{
+  border-color:#705521;
+}
+
+.send{
+  width:47px;
+  height:45px;
+  border-radius:14px;
+  border:none;
+  background:linear-gradient(145deg,#f0c86b,#b78328);
+  color:#111;
+  font-size:20px;
+  font-weight:900;
+}
+
+/* ATTACHMENT MENU */
+
+.attach-menu{
+  display:none;
+  position:absolute;
+  bottom:64px;
+  left:10px;
+  background:#151515;
+  border:1px solid #333;
+  border-radius:16px;
+  padding:8px;
+  box-shadow:0 10px 35px #000;
+}
+
+.attach-menu button{
+  display:block;
+  width:190px;
+  text-align:left;
+  background:none;
+  border:0;
+  color:#eee;
+  padding:12px;
+  border-radius:10px;
+}
+
+.attach-menu button:hover{
+  background:#222;
+}
+
+/* TYPING */
+
+.typing{
+  display:inline-flex;
+  gap:4px;
+}
+
+.typing span{
+  width:6px;
+  height:6px;
+  background:#aaa;
+  border-radius:50%;
+  animation:b 1s infinite;
+}
+
+.typing span:nth-child(2){
+  animation-delay:.15s;
+}
+
+.typing span:nth-child(3){
+  animation-delay:.3s;
+}
+
+@keyframes b{
+  0%,100%{opacity:.2}
+  50%{opacity:1}
+}
+
+/* TOAST */
+
+.toast{
+  position:fixed;
+  top:75px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#191919;
+  border:1px solid #3b3b3b;
+  color:#eee;
+  padding:10px 15px;
+  border-radius:12px;
+  font-size:12px;
+  display:none;
+  z-index:100;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+  header{
+    height:62px;
+  }
+
+  .title{
+    font-size:18px;
+  }
+
+  .subtitle{
+    font-size:9px;
+  }
+
+  .logo{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+  }
+
+  .welcome{
+    padding-top:35px;
+  }
+
+  .welcome h1{
+    font-size:28px;
+  }
+
+  .msg{
+    max-width:92%;
+  }
+
+  .status{
+    bottom:66px;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
-<header class="topbar">
-  <div class="brand"><div class="logo"></div><span>Guru <span class="ai">AI</span></span></div>
-  <div class="top-actions">
-    <button class="lang" id="langTop" onclick="openSettings()">🌐 <span id="langLabel">English</span></button>
-    <button class="gear" aria-label="Settings" onclick="openSettings()">⚙️</button>
+
+<header>
+
+  <div class="brand">
+
+    <div class="logo">✦</div>
+
+    <div>
+      <div class="title">Guru AI</div>
+      <div class="subtitle">Gemini 3.8 • Auto Fallback • Secure</div>
+    </div>
+
   </div>
+
+  <div class="top-right">
+
+    <select id="language">
+      <option value="auto">Auto</option>
+      <option value="hi">हिंदी</option>
+      <option value="en">English</option>
+      <option value="es">Español</option>
+    </select>
+
+    <button class="icon-btn" id="clearBtn">⌫</button>
+
+  </div>
+
 </header>
 
-<main class="chat" id="chat">
-  <div class="chat-inner" id="chatInner">
-    <section class="welcome" id="welcome">
-      <div class="welcome-card">
-        <h1>How can <span>Guru AI</span> help?</h1>
-        <p id="welcomeText">A fast, practical AI companion with bilingual chat, live web grounding, camera vision, documents and voice.</p>
-        <div class="capabilities">
-          <span class="cap">⚡ Fast AI</span><span class="cap">🌐 Live Search</span><span class="cap">📷 Vision</span><span class="cap">📄 PDF</span><span class="cap">🎙 Voice</span>
-        </div>
-      </div>
-    </section>
-  </div>
+
+<main id="chat">
+
+  <section class="welcome" id="welcome">
+
+    <div class="welcome-logo">✦</div>
+
+    <h1>नमस्ते, <span>Guru AI</span></h1>
+
+    <p>
+      आपका AI Assistant<br>
+      Mobile Repair • Camera • PDF • Web Search • General AI
+    </p>
+
+    <div class="quick">
+
+      <button data-q="मेरे मोबाइल में चार्जिंग नहीं हो रही है, क्या चेक करूं?">
+        🔧 Mobile Repair
+      </button>
+
+      <button data-q="इस समस्या को आसान हिंदी में समझाओ">
+        🧠 Explain
+      </button>
+
+      <button data-q="आज की महत्वपूर्ण जानकारी बताओ">
+        🌐 Web Search
+      </button>
+
+      <button data-q="मेरे लिए एक professional message लिखो">
+        ✍️ Writing
+      </button>
+
+    </div>
+
+  </section>
+
 </main>
 
+
+<div class="status" id="status"></div>
+
+
 <div class="composer-wrap">
-  <div class="status" id="status">Guru AI ready</div>
-  <div class="composer">
-    <button class="icon" onclick="togglePlus()" aria-label="Add">＋</button>
-    <textarea id="input" class="textbox" rows="1" placeholder="Message Guru AI…" oninput="resizeInput(this)" onkeydown="handleKey(event)"></textarea>
-    <button class="icon" id="mic" onclick="toggleMic()" aria-label="Voice input">🎙</button>
-    <button class="icon send" onclick="send()" aria-label="Send">➤</button>
+
+  <div class="attach-menu" id="attachMenu">
+
+    <button id="cameraBtn">📷 Camera</button>
+
+    <button id="galleryBtn">🖼️ Photos / Gallery</button>
+
+    <button id="fileBtn">📄 PDF / File</button>
+
   </div>
+
+
+  <div class="composer">
+
+    <button class="circle" id="plusBtn">＋</button>
+
+    <textarea
+      id="input"
+      rows="1"
+      placeholder="Guru AI से कुछ पूछें..."
+    ></textarea>
+
+    <button class="circle" id="micBtn">🎙️</button>
+
+    <button class="send" id="sendBtn">➤</button>
+
+  </div>
+
 </div>
 
-<div class="plus-menu" id="plusMenu">
-  <button class="menu-item" onclick="startCamera()">📷 <span><b>Camera</b><small>Live capture & vision</small></span></button>
-  <button class="menu-item" onclick="pickImage()">🖼️ <span><b>Photos / Gallery</b><small>Analyze an image</small></span></button>
-  <button class="menu-item" onclick="pickFile()">📄 <span><b>Files / PDF</b><small>Send a document</small></span></button>
-</div>
-<input id="imagePicker" class="hidden" type="file" accept="image/*">
-<input id="filePicker" class="hidden" type="file" accept=".pdf,.txt,.md,.csv,.json,application/pdf,text/plain,text/markdown,text/csv,application/json">
-
-<div class="settings" id="settings" onclick="if(event.target===this)closeSettings()">
-  <aside class="drawer">
-    <div class="drawer-head"><h2>Settings</h2><button class="close" onclick="closeSettings()">✕</button></div>
-    <div class="setting-row"><div><strong>AI Core Engine</strong><small>Main AI switch. Turn it off to disable API calls.</small></div><div class="switch on" id="sCore" onclick="toggleSetting('core')"><i></i></div></div>
-    <div class="setting-row"><div><strong>Live Web Search</strong><small>Use Gemini Google Search grounding for current information.</small></div><div class="switch on" id="sSearch" onclick="toggleSetting('search')"><i></i></div></div>
-    <div class="setting-row"><div><strong>Background Voice Agent</strong><small>Controls voice-input permission/behavior.</small></div><div class="switch" id="sVoice" onclick="toggleSetting('voice')"><i></i></div></div>
-    <div class="setting-row"><div><strong>Auto Mode / Actions</strong><small>Enables convenient automatic actions such as sending recognized speech.</small></div><div class="switch on" id="sAuto" onclick="toggleSetting('auto')"><i></i></div></div>
-    <div style="margin-top:22px"><strong>Language</strong><div class="lang-list">
-      <button class="lang-btn active" data-lang="en" onclick="setLang('en')">🇬🇧 English</button>
-      <button class="lang-btn" data-lang="hi" onclick="setLang('hi')">🇮🇳 हिंदी</button>
-      <button class="lang-btn" data-lang="es" onclick="setLang('es')">🇪🇸 Español</button>
-      <button class="lang-btn" data-lang="auto" onclick="setLang('auto')">🌐 Auto</button>
-    </div></div>
-    <div style="margin-top:22px;color:var(--muted);font-size:11px;line-height:1.55">
-      <b style="color:#d9d5cc">Privacy</b><br>
-      Your Gemini key stays on Vercel as <code>GEMINI_API_KEY</code>. The browser never receives the key.
-    </div>
-  </aside>
 </div>
 
-<div class="camera-modal" id="cameraModal">
-  <div class="camera-head"><b>Live Camera Vision</b><button class="close" onclick="stopCamera()">✕</button></div>
-  <video id="video" autoplay playsinline muted></video>
-  <div class="camera-controls"><button class="capture" onclick="capture()">●</button></div>
-</div>
+
+<input
+  type="file"
+  id="fileInput"
+  accept="image/*,.pdf,.txt,.md,.csv,.json"
+  hidden
+>
+
+<input
+  type="file"
+  id="cameraInput"
+  accept="image/*"
+  capture="environment"
+  hidden
+>
+
+<div class="toast" id="toast"></div>
+
 
 <script>
-const state={
-  lang:localStorage.getItem('guru_lang')||'en',
-  core:true, search:true, voice:false, auto:true,
-  attached:null, attachedName:'', attachedType:''
-};
-let recognition=null, listening=false, stream=null;
 
-const $=id=>document.getElementById(id);
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function openSettings(){ $('settings').classList.add('show'); $('plusMenu').classList.remove('show'); syncSettings(); }
-function closeSettings(){ $('settings').classList.remove('show'); }
-function togglePlus(){ $('plusMenu').classList.toggle('show'); }
-function toggleSetting(k){state[k]=!state[k];syncSettings();updateStatus();}
-function syncSettings(){
-  [['core','sCore'],['search','sSearch'],['voice','sVoice'],['auto','sAuto']].forEach(([k,id])=>$(id).classList.toggle('on',state[k]));
-  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('active',b.dataset.lang===state.lang));
+const chat = document.getElementById("chat");
+const welcome = document.getElementById("welcome");
+
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("sendBtn");
+const micBtn = document.getElementById("micBtn");
+
+const plusBtn = document.getElementById("plusBtn");
+const attachMenu = document.getElementById("attachMenu");
+
+const fileInput = document.getElementById("fileInput");
+const cameraInput = document.getElementById("cameraInput");
+
+const statusEl = document.getElementById("status");
+const toast = document.getElementById("toast");
+
+const clearBtn = document.getElementById("clearBtn");
+const language = document.getElementById("language");
+
+let messages = [];
+let attachments = [];
+
+
+// -------------------------
+// UI
+// -------------------------
+
+function showToast(text){
+
+  toast.textContent = text;
+  toast.style.display = "block";
+
+  setTimeout(()=>{
+    toast.style.display = "none";
+  },2500);
 }
-function updateStatus(){
-  if(!state.core){$('status').textContent=state.lang==='hi'?'AI Core बंद है':'AI Core is off';$('status').className='status error';}
-  else {$('status').textContent='Guru AI ready';$('status').className='status ok';}
+
+
+function status(text){
+  statusEl.textContent = text || "";
 }
-function setLang(lang){
-  state.lang=lang;localStorage.setItem('guru_lang',lang);
-  const label={en:'English',hi:'हिंदी',es:'Español',auto:'Auto'}[lang]||'English';
-  $('langLabel').textContent=label;
-  $('welcomeText').textContent=lang==='hi'?'तेज़ और उपयोगी AI साथी — हिंदी/English चैट, लाइव वेब सर्च, कैमरा विज़न, PDF और आवाज़ के साथ।':'A fast, practical AI companion with bilingual chat, live web grounding, camera vision, documents and voice.';
-  $('input').placeholder=lang==='hi'?'Guru AI को संदेश लिखें…':'Message Guru AI…';
-  syncSettings();
-}
-function resizeInput(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,140)+'px'}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}}
-function addMessage(role,text,sources=[]){
-  $('welcome')?.remove();
-  const row=document.createElement('div');row.className='msg '+role;
-  const bubble=document.createElement('div');bubble.className='bubble';
-  bubble.innerHTML=role==='user'?escapeHTML(text):formatAI(text,sources);
-  row.appendChild(bubble);$('chatInner').appendChild(row);
-  $('chat').scrollTop=$('chat').scrollHeight;
-}
-function formatAI(text,sources){
-  let safe=escapeHTML(text);
-  safe=safe.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>');
-  if(sources?.length){
-    safe+='<div class="sources">'+sources.slice(0,6).map(s=>'<a target="_blank" rel="noopener" href="'+escapeHTML(s.uri)+'">'+escapeHTML(s.title||s.uri)+'</a>').join('')+'</div>';
-  }
-  return safe;
-}
-function typing(){
-  $('welcome')?.remove();
-  const row=document.createElement('div');row.id='typing';row.className='msg ai';
-  row.innerHTML='<div class="bubble"><div class="typing"><i class="dot"></i><i class="dot"></i><i class="dot"></i></div></div>';
-  $('chatInner').appendChild(row);$('chat').scrollTop=$('chat').scrollHeight;
-}
-function removeTyping(){$('typing')?.remove()}
-async function send(){
-  $('plusMenu').classList.remove('show');
-  if(!state.core){updateStatus();return}
-  const text=$('input').value.trim();
-  if(!text && !state.attached){return}
-  const shown=text || (state.lang==='hi'?'फाइल भेजी गई':'File attached');
-  addMessage('user',shown);
-  $('input').value='';resizeInput($('input'));
-  const attachment=state.attached;
-  state.attached=null;
-  state.attachedName='';state.attachedType='';
-  typing();
-  try{
-    const payload={message:text||'Analyze the attached file and explain the useful findings.',language:state.lang,liveSearch:state.search,attachment};
-    const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const data=await r.json();
-    if(!r.ok)throw new Error(data.error||'Server error');
-    removeTyping();addMessage('ai',data.text||'No response received.',data.sources||[]);
-    $('status').textContent=data.grounded?'Live web grounded response':'AI response';
-    $('status').className='status ok';
-  }catch(e){
-    removeTyping();addMessage('ai','❌ '+(e.message||'Something went wrong.'));
-    $('status').textContent='Connection/API error';$('status').className='status error';
-  }
-}
-function fileToDataURL(file){
-  return new Promise((resolve,reject)=>{
-    const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);
+
+
+function scrollBottom(){
+
+  requestAnimationFrame(()=>{
+    chat.scrollTop = chat.scrollHeight;
   });
-}
-async function chooseFile(file){
-  if(!file)return;
-  const max=file.type==='application/pdf'?50*1024*1024:15*1024*1024;
-  if(file.size>max){alert('File is too large. Please choose a smaller file.');return}
-  const data=await fileToDataURL(file);
-  state.attached={mimeType:file.type||'application/octet-stream',data:data.split(',')[1]};
-  state.attachedName=file.name;state.attachedType=file.type;
-  $('input').placeholder='Attachment ready — add a question or press send';
-  $('status').textContent='Attached: '+file.name;$('status').className='status ok';
-}
-$('imagePicker').onchange=e=>chooseFile(e.target.files[0]);
-$('filePicker').onchange=e=>chooseFile(e.target.files[0]);
-function pickImage(){ $('plusMenu').classList.remove('show');$('imagePicker').click(); }
-function pickFile(){ $('plusMenu').classList.remove('show');$('filePicker').click(); }
 
-async function startCamera(){
-  $('plusMenu').classList.remove('show');
+}
+
+
+function addMessage(text, type, sources = []){
+
+  const div = document.createElement("div");
+
+  div.className = "msg " + type;
+
+  div.textContent = text;
+
+  if(sources && sources.length){
+
+    const sourceBox =
+      document.createElement("div");
+
+    sourceBox.className = "sources";
+
+    const heading =
+      document.createElement("div");
+
+    heading.textContent = "🌐 Sources";
+
+    sourceBox.appendChild(heading);
+
+    sources.forEach(source => {
+
+      if(!source.uri) return;
+
+      const a =
+        document.createElement("a");
+
+      a.href = source.uri;
+
+      a.target = "_blank";
+
+      a.rel = "noopener noreferrer";
+
+      a.textContent =
+        source.title || source.uri;
+
+      sourceBox.appendChild(a);
+
+    });
+
+    div.appendChild(sourceBox);
+  }
+
+  chat.appendChild(div);
+
+  scrollBottom();
+
+  return div;
+}
+
+
+function addTyping(){
+
+  const div =
+    document.createElement("div");
+
+  div.className = "msg ai";
+
+  div.id = "typing";
+
+  div.innerHTML = `
+    <span class="typing">
+      <span></span>
+      <span></span>
+      <span></span>
+    </span>
+  `;
+
+  chat.appendChild(div);
+
+  scrollBottom();
+}
+
+
+function removeTyping(){
+
+  const t =
+    document.getElementById("typing");
+
+  if(t) t.remove();
+
+}
+
+
+// -------------------------
+// SEND MESSAGE
+// -------------------------
+
+async function sendMessage(){
+
+  const text =
+    input.value.trim();
+
+  if(!text && !attachments.length){
+    return;
+  }
+
+  welcome.style.display = "none";
+
+  addMessage(
+    text || "📎 Attachment",
+    "user"
+  );
+
+  messages.push({
+    role:"user",
+    text:text,
+    attachments:attachments
+  });
+
+  input.value = "";
+
+  input.style.height = "auto";
+
+  const currentAttachments =
+    attachments;
+
+  attachments = [];
+
+  attachMenu.style.display = "none";
+
+  status("Guru AI सोच रहा है...");
+
+  addTyping();
+
+  sendBtn.disabled = true;
+
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-    $('video').srcObject=stream;$('cameraModal').classList.add('show');
-  }catch(e){alert('Camera permission नहीं मिली. Browser settings में Camera permission allow करें.');}
-}
-function stopCamera(){
-  stream?.getTracks().forEach(t=>t.stop());stream=null;$('video').srcObject=null;$('cameraModal').classList.remove('show');
-}
-async function capture(){
-  const v=$('video');if(!v.videoWidth){return}
-  const c=document.createElement('canvas'),max=1600,scale=Math.min(1,max/v.videoWidth);
-  c.width=Math.round(v.videoWidth*scale);c.height=Math.round(v.videoHeight*scale);
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
-  const b64=c.toDataURL('image/jpeg',.88).split(',')[1];
-  stopCamera();
-  state.attached={mimeType:'image/jpeg',data:b64};state.attachedName='Camera photo';state.attachedType='image/jpeg';
-  $('input').placeholder='Camera photo ready — describe the fault or press send';
-  $('status').textContent='Camera photo ready';$('status').className='status ok';
+
+    const response =
+      await fetch("/api/chat",{
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        body:JSON.stringify({
+
+          messages:messages,
+
+          enableSearch:true,
+
+          language:
+            language.value
+
+        })
+
+      });
+
+
+    const data =
+      await response.json();
+
+
+    removeTyping();
+
+
+    if(!response.ok){
+
+      throw new Error(
+        data.error ||
+        "Request failed"
+      );
+
+    }
+
+
+    const answer =
+      data.text ||
+      "कोई उत्तर नहीं मिला।";
+
+
+    addMessage(
+      answer,
+      "ai",
+      data.sources || []
+    );
+
+
+    messages.push({
+      role:"assistant",
+      text:answer
+    });
+
+
+    if(data.model){
+
+      status(
+        "Active model: " +
+        data.model
+      );
+
+    }else{
+
+      status("");
+
+    }
+
+
+  }catch(error){
+
+    removeTyping();
+
+    addMessage(
+      "⚠️ अभी जवाब नहीं मिला।\n\n" +
+      error.message +
+      "\n\nथोड़ी देर बाद फिर कोशिश करें।",
+      "ai"
+    );
+
+    status(
+      "Connection / API limit"
+    );
+
+  }finally{
+
+    sendBtn.disabled = false;
+
+  }
+
 }
 
-function toggleMic(){
-  if(!state.voice){alert(state.lang==='hi'?'Settings में Background Voice Agent ON करें।':'Turn on Background Voice Agent in Settings first.');return}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){alert('Voice input is not supported by this browser.');return}
-  if(listening){recognition?.stop();return}
-  recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang=state.lang==='hi'?'hi-IN':state.lang==='es'?'es-ES':'en-IN';
-  recognition.onstart=()=>{listening=true;$('mic').classList.add('listening');$('status').textContent='Listening…'};
-  recognition.onresult=e=>{ $('input').value=e.results[0][0].transcript;resizeInput($('input')); if(state.auto)send(); };
-  recognition.onerror=()=>{listening=false;$('mic').classList.remove('listening');updateStatus()};
-  recognition.onend=()=>{listening=false;$('mic').classList.remove('listening');if(state.core)$('status').textContent='Guru AI ready'};
-  recognition.start();
+
+// -------------------------
+// ENTER
+// -------------------------
+
+input.addEventListener(
+  "keydown",
+  function(e){
+
+    if(
+      e.key === "Enter" &&
+      !e.shiftKey
+    ){
+
+      e.preventDefault();
+
+      sendMessage();
+
+    }
+
+  }
+);
+
+
+// -------------------------
+// AUTO RESIZE
+// -------------------------
+
+input.addEventListener(
+  "input",
+  function(){
+
+    this.style.height =
+      "auto";
+
+    this.style.height =
+      Math.min(
+        this.scrollHeight,
+        130
+      ) + "px";
+
+  }
+);
+
+
+// -------------------------
+// SEND BUTTON
+// -------------------------
+
+sendBtn.addEventListener(
+  "click",
+  sendMessage
+);
+
+
+// -------------------------
+// ATTACH MENU
+// -------------------------
+
+plusBtn.addEventListener(
+  "click",
+  function(){
+
+    attachMenu.style.display =
+      attachMenu.style.display === "block"
+        ? "none"
+        : "block";
+
+  }
+);
+
+
+// -------------------------
+// FILE UPLOAD
+// -------------------------
+
+document.getElementById(
+  "fileBtn"
+).addEventListener(
+  "click",
+  function(){
+
+    attachMenu.style.display =
+      "none";
+
+    fileInput.click();
+
+  }
+);
+
+
+// -------------------------
+// GALLERY
+// -------------------------
+
+document.getElementById(
+  "galleryBtn"
+).addEventListener(
+  "click",
+  function(){
+
+    attachMenu.style.display =
+      "none";
+
+    fileInput.click();
+
+  }
+);
+
+
+// -------------------------
+// CAMERA
+// -------------------------
+
+document.getElementById(
+  "cameraBtn"
+).addEventListener(
+  "click",
+  function(){
+
+    attachMenu.style.display =
+      "none";
+
+    cameraInput.click();
+
+  }
+);
+
+
+// -------------------------
+// READ FILE
+// -------------------------
+
+function readFile(file){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () => resolve(
+          reader.result
+        );
+
+      reader.onerror =
+        () => reject(
+          new Error(
+            "File read failed"
+          )
+        );
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
 }
-setLang(state.lang);
-updateStatus();
-document.addEventListener('click',e=>{if(!e.target.closest('.plus-menu')&&!e.target.closest('.composer'))$('plusMenu').classList.remove('show')});
+
+
+async function handleFile(file){
+
+  if(!file) return;
+
+  status(
+    "File तैयार हो रही है..."
+  );
+
+  try{
+
+    const data =
+      await readFile(file);
+
+    attachments.push({
+
+      mimeType:
+        file.type ||
+        "application/octet-stream",
+
+      data:data
+
+    });
+
+    showToast(
+      "📎 File तैयार है — अब भेजें"
+    );
+
+    status(
+      file.name || "Attachment ready"
+    );
+
+  }catch(error){
+
+    showToast(
+      "File पढ़ने में समस्या"
+    );
+
+    status("");
+
+  }
+
+}
+
+
+fileInput.addEventListener(
+  "change",
+  async function(){
+
+    const file =
+      this.files?.[0];
+
+    await handleFile(file);
+
+    this.value = "";
+
+  }
+);
+
+
+cameraInput.addEventListener(
+  "change",
+  async function(){
+
+    const file =
+      this.files?.[0];
+
+    await handleFile(file);
+
+    this.value = "";
+
+  }
+);
+
+
+// -------------------------
+// VOICE INPUT
+// -------------------------
+
+micBtn.addEventListener(
+  "click",
+  function(){
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+
+    if(!SpeechRecognition){
+
+      showToast(
+        "इस browser में Voice Input उपलब्ध नहीं है"
+      );
+
+      return;
+
+    }
+
+
+    const recognition =
+      new SpeechRecognition();
+
+
+    const selected =
+      language.value;
+
+
+    if(selected === "en"){
+
+      recognition.lang =
+        "en-IN";
+
+    }else if(
+      selected === "es"
+    ){
+
+      recognition.lang =
+        "es-ES";
+
+    }else{
+
+      recognition.lang =
+        "hi-IN";
+
+    }
+
+
+    recognition.interimResults =
+      false;
+
+    recognition.maxAlternatives =
+      1;
+
+
+    status(
+      "🎙️ बोलिए..."
+    );
+
+
+    recognition.onresult =
+      function(event){
+
+        const spoken =
+          event.results[0][0]
+            .transcript;
+
+        input.value +=
+          spoken + " ";
+
+        input.dispatchEvent(
+          new Event("input")
+        );
+
+        status(
+          "Voice text तैयार है"
+        );
+
+      };
+
+
+    recognition.onerror =
+      function(){
+
+        status(
+          "Voice input बंद हो गया"
+        );
+
+      };
+
+
+    recognition.onend =
+      function(){
+
+        setTimeout(()=>{
+          status("");
+        },1200);
+
+      };
+
+
+    recognition.start();
+
+  }
+);
+
+
+// -------------------------
+// QUICK QUESTIONS
+// -------------------------
+
+document
+  .querySelectorAll(".quick button")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      function(){
+
+        input.value =
+          this.dataset.q;
+
+        input.dispatchEvent(
+          new Event("input")
+        );
+
+        sendMessage();
+
+      }
+    );
+
+  });
+
+
+// -------------------------
+// CLEAR CHAT
+// -------------------------
+
+clearBtn.addEventListener(
+  "click",
+  function(){
+
+    messages = [];
+
+    attachments = [];
+
+    chat.innerHTML = "";
+
+    chat.appendChild(
+      welcome
+    );
+
+    welcome.style.display =
+      "block";
+
+    status("");
+
+    showToast(
+      "Chat साफ हो गई"
+    );
+
+  }
+);
+
+
+// -------------------------
+// CLOSE MENU OUTSIDE
+// -------------------------
+
+document.addEventListener(
+  "click",
+  function(e){
+
+    if(
+      !attachMenu.contains(e.target) &&
+      e.target !== plusBtn
+    ){
+
+      attachMenu.style.display =
+        "none";
+
+    }
+
+  }
+);
+
 </script>
+
 </body>
 </html>
