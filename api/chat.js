@@ -1,161 +1,302 @@
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-const MAX_BODY = 60 * 1024 * 1024;
+const DEFAULT_MODELS = [
+  process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  "gemini-3.6-flash",
+  "gemini-2.5-flash"
+];
 
-function json(res, status, body) {
-  res.status(status).setHeader("Content-Type", "application/json; charset=utf-8");
-  res.end(JSON.stringify(body));
+const API_BASE =
+  "https://generativelanguage.googleapis.com/v1beta/models/";
+
+const TIMEOUT_MS = 55000;
+const MAX_RETRIES = 2;
+
+const SYSTEM_PROMPT = `
+You are Guru AI, a practical bilingual Hindi/English AI assistant.
+
+Answer naturally in the user's language.
+
+You are especially useful for:
+- Mobile phone repair
+- Electronics troubleshooting
+- Circuit and motherboard analysis
+- Software and Android problems
+- Camera/image inspection
+- PDF and document analysis
+- General questions
+- Current information using web search when available
+
+When an image, PDF, or document is supplied, inspect it carefully before answering.
+
+For current or changing information, use Google Search grounding when available.
+
+Never invent measurements, component values, sources, or diagnoses.
+
+For repair questions:
+1. Tell the likely problem.
+2. Explain why.
+3. Give safe testing steps.
+4. Mention what should be checked next.
+5. Clearly separate confirmed observations from guesses.
+
+Keep answers useful, clear and reasonably concise.
+`;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function cleanBase64(data) {
-  if (!data) return "";
-  const s = String(data);
-  const comma = s.indexOf(",");
-  return s.startsWith("data:") && comma >= 0 ? s.slice(comma + 1) : s;
+function isRetryable(status) {
+  return (
+    status === 429 ||
+    status === 500 ||
+    status === 502 ||
+    status === 503 ||
+    status === 504
+  );
 }
 
-function languageInstruction(language) {
-  if (language === "hi") return "Reply in natural, simple Hindi. Keep technical component names, IC names and measurements in English where that is clearer.";
-  if (language === "es") return "Reply in natural Spanish.";
-  if (language === "auto") return "Reply in the same language as the user's message.";
-  return "Reply in clear natural English.";
-}
+function buildContents(messages) {
+  return (messages || []).map(message => {
+    const parts = [];
 
-function systemPrompt(language, hasAttachment) {
-  return `You are Guru AI, a premium practical AI assistant.
-Never introduce yourself, never mention the developer or API key, and do not add unnecessary greetings.
-${languageInstruction(language)}
-Be helpful, direct, accurate and conversational, like a knowledgeable human assistant.
-If the user asks about mobile-phone repair, electronics, motherboard faults, ICs, charging, short circuits, diagnostics or repair tools, give structured step-by-step guidance. For board images, distinguish visible observations from hypotheses and recommend safe measurements before claiming a fault.
-If the user asks for current news, prices, events, specifications, laws, product availability or anything time-sensitive, use Google Search grounding when enabled.
-Do not invent citations or sources.
-For electrical repair, include concise safety guidance where relevant.
-${hasAttachment ? "A file/image/PDF is attached. Inspect it carefully and base the answer on its contents; if the evidence is insufficient, say what cannot be confirmed." : ""}`;
-}
-
-function extractText(data) {
-  const parts = data?.candidates?.[0]?.content?.parts || [];
-  return parts.map(p => p.text || "").join("").trim();
-}
-
-function extractSources(data) {
-  const out = [];
-  const chunks = data?.candidates?.[0]?.groundingMetadata?.groundingChunks
-    || data?.candidates?.[0]?.groundingMetadata?.groundingChunks
-    || data?.groundingMetadata?.groundingChunks || [];
-  for (const c of chunks) {
-    const w = c?.web;
-    if (w?.uri && !out.some(x => x.uri === w.uri)) {
-      out.push({title: w.title || w.uri, uri: w.uri});
+    if (message.text) {
+      parts.push({
+        text: String(message.text)
+      });
     }
-  }
-  return out;
+
+    for (const attachment of message.attachments || []) {
+      if (
+        !attachment ||
+        !attachment.data ||
+        !attachment.mimeType
+      ) {
+        continue;
+      }
+
+      parts.push({
+        inline_data: {
+          mime_type: attachment.mimeType,
+          data: String(attachment.data).replace(
+            /^data:[^;]+;base64,/,
+            ""
+          )
+        }
+      });
+    }
+
+    return {
+      role: message.role === "assistant" ? "model" : "user",
+      parts: parts.length ? parts : [{ text: "" }]
+    };
+  });
 }
 
-function friendlyError(status, msg) {
-  const m = String(msg || "");
-  if (/models\/.*not found|not found|not supported/i.test(m)) {
-    return `Gemini model "${MODEL}" is not available for this API project. In Vercel Environment Variables, set GEMINI_MODEL to a model enabled for your project (for example gemini-3.6-flash), then redeploy.`;
+async function callModel(model, body, apiKey) {
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, TIMEOUT_MS);
+
+  try {
+    const url =
+      API_BASE +
+      encodeURIComponent(model) +
+      ":generateContent?key=" +
+      encodeURIComponent(apiKey);
+
+    const response = await fetch(url, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(body),
+
+      signal: controller.signal
+    });
+
+    const raw = await response.text();
+
+    let data = {};
+
+    try {
+      data = JSON.parse(raw);
+    } catch (_) {}
+
+    if (!response.ok) {
+      const error = new Error(
+        data?.error?.message ||
+          `Gemini HTTP ${response.status}`
+      );
+
+      error.status = response.status;
+
+      throw error;
+    }
+
+    return data;
+  } finally {
+    clearTimeout(timer);
   }
-  if (/api key|permission|unauthenticated|authentication|forbidden|invalid.*key/i.test(m)) {
-    return "Gemini API key is missing, invalid, or does not have permission for this model. Check Vercel → Settings → Environment Variables → GEMINI_API_KEY, then redeploy.";
-  }
-  if (status === 429) return "Gemini rate limit reached. Please wait a moment and try again.";
-  if (status >= 500) return "Gemini service is temporarily unavailable. Please try again in a moment.";
-  return m || `Gemini request failed (HTTP ${status}).`;
 }
 
 export default async function handler(req, res) {
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    return res.status(204).end();
-  }
-  if (req.method !== "POST") return json(res, 405, {error: "Method not allowed"});
-  if (!process.env.GEMINI_API_KEY) return json(res, 500, {error: "GEMINI_API_KEY is not configured in Vercel."});
-
-  try {
-    const raw = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
-    const message = String(raw.message || "").trim();
-    const language = ["en","hi","es","auto"].includes(raw.language) ? raw.language : "en";
-    const liveSearch = raw.liveSearch !== false;
-    const attachment = raw.attachment || null;
-
-    if (!message && !attachment) return json(res, 400, {error: "Message or attachment is required."});
-
-    const parts = [{text: systemPrompt(language, !!attachment)}];
-    if (message) parts.push({text: message});
-
-    if (attachment) {
-      const mimeType = String(attachment.mimeType || "application/octet-stream").toLowerCase();
-      const data = cleanBase64(attachment.data);
-      if (!data) return json(res, 400, {error: "Attachment data is empty."});
-
-      const allowed = [
-        "image/jpeg","image/png","image/webp","image/gif",
-        "application/pdf","text/plain","text/markdown","text/csv","application/json"
-      ];
-      if (!allowed.includes(mimeType)) {
-        return json(res, 415, {error: `Unsupported attachment type: ${mimeType}`});
-      }
-      if (Buffer.byteLength(data, "base64") > 50 * 1024 * 1024) {
-        return json(res, 413, {error: "Attachment is too large. Keep PDFs under 50 MB and images smaller."});
-      }
-      parts.push({inline_data:{mime_type:mimeType,data}});
-    }
-
-    const body = {
-      contents: [{role:"user", parts}],
-      generationConfig: {
-        temperature: 0.35,
-        maxOutputTokens: 1800
-      }
-    };
-
-    // Correct Gemini REST tool syntax. This is intentionally server-side.
-    // Search is enabled for text and multimodal questions alike.
-    if (liveSearch) body.tools = [{google_search:{}}];
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 55000);
-
-    let response;
-    try {
-      response = await fetch(`${API_URL}?key=${encodeURIComponent(process.env.GEMINI_API_KEY)}`, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(body),
-        signal:controller.signal
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    const rawText = await response.text();
-    let data;
-    try { data = JSON.parse(rawText); }
-    catch { return json(res, 502, {error:"Gemini returned an invalid response."}); }
-
-    if (!response.ok) {
-      return json(res, response.status, {error:friendlyError(response.status, data?.error?.message)});
-    }
-
-    const text = extractText(data);
-    if (!text) {
-      const block = data?.candidates?.[0]?.finishReason || "unknown";
-      return json(res, 502, {error:`Gemini returned no text (finish reason: ${block}).`});
-    }
-
-    return json(res, 200, {
-      text,
-      sources: extractSources(data),
-      grounded: liveSearch && extractSources(data).length > 0,
-      model: MODEL
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Method not allowed"
     });
-  } catch (err) {
-    if (err?.name === "AbortError") return json(res, 504, {error:"Gemini request timed out. Please try again."});
-    console.error("Guru AI API error:", err);
-    return json(res, 500, {error:"Server error while contacting Gemini."});
   }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({
+      error:
+        "GEMINI_API_KEY is missing in Vercel Environment Variables."
+    });
+  }
+
+  const messages = req.body?.messages || [];
+
+  const enableSearch =
+    req.body?.enableSearch !== false;
+
+  if (!messages.length) {
+    return res.status(400).json({
+      error: "No messages supplied."
+    });
+  }
+
+  const body = {
+    system_instruction: {
+      parts: [
+        {
+          text: SYSTEM_PROMPT
+        }
+      ]
+    },
+
+    contents: buildContents(messages),
+
+    generationConfig: {
+      maxOutputTokens: 1800
+    }
+  };
+
+  // Google Search grounding
+  if (enableSearch) {
+    body.tools = [
+      {
+        google_search: {}
+      }
+    ];
+  }
+
+  let lastError = null;
+
+  // 3.8 → 3.6 → 2.5 automatic fallback
+  for (const model of DEFAULT_MODELS) {
+    for (
+      let attempt = 0;
+      attempt <= MAX_RETRIES;
+      attempt++
+    ) {
+      try {
+        const data = await callModel(
+          model,
+          body,
+          apiKey
+        );
+
+        const text = (data?.candidates || [])
+          .flatMap(
+            candidate =>
+              candidate?.content?.parts || []
+          )
+          .map(part => part?.text || "")
+          .join("")
+          .trim();
+
+        const grounding =
+          data?.candidates?.[0]
+            ?.groundingMetadata;
+
+        const sources = [];
+
+        for (
+          const chunk of
+          grounding?.groundingChunks || []
+        ) {
+          const web = chunk?.web;
+
+          if (web?.uri) {
+            sources.push({
+              title: web.title || web.uri,
+              uri: web.uri
+            });
+          }
+        }
+
+        return res.status(200).json({
+          text:
+            text ||
+            "मुझे इस बार उत्तर नहीं मिला। कृपया फिर से भेजें।",
+
+          model,
+
+          sources
+        });
+      } catch (error) {
+        lastError = error;
+
+        // Rate limit / temporary server error
+        if (
+          isRetryable(error.status) &&
+          attempt < MAX_RETRIES
+        ) {
+          await sleep(
+            700 * Math.pow(2, attempt)
+          );
+
+          continue;
+        }
+
+        // Try next model
+        if (isRetryable(error.status)) {
+          break;
+        }
+
+        // Model unavailable / bad request
+        if (
+          error.status === 400 ||
+          error.status === 404
+        ) {
+          break;
+        }
+
+        return res.status(500).json({
+          error:
+            error.message ||
+            "Gemini request failed."
+        });
+      }
+    }
+  }
+
+  const status =
+    lastError?.status === 429
+      ? 429
+      : 503;
+
+  return res.status(status).json({
+    error:
+      "अभी Gemini की API limit या availability पूरी हो गई है। Guru AI ने automatic retry और fallback models चलाए, लेकिन अभी सभी उपलब्ध रास्ते व्यस्त हैं। थोड़ी देर बाद फिर कोशिश करें।",
+
+    detail:
+      lastError?.message ||
+      "No model available"
+  });
 }
