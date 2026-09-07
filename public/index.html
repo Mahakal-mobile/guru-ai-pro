@@ -28,12 +28,7 @@ body{
   background:
     radial-gradient(circle at top,#211806 0%,#0b0b0b 38%,#050505 100%);
   color:var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 .app{
@@ -43,8 +38,6 @@ body{
   display:flex;
   flex-direction:column;
 }
-
-/* HEADER */
 
 header{
   height:68px;
@@ -66,18 +59,22 @@ header{
   gap:10px;
 }
 
-.logo{
-  width:42px;
-  height:42px;
-  border-radius:14px;
+.logo,
+.welcome-logo{
   display:flex;
   align-items:center;
   justify-content:center;
   background:linear-gradient(145deg,#f2c867,#9b7024);
   color:#111;
-  font-size:22px;
   font-weight:900;
   box-shadow:0 0 25px rgba(214,168,79,.18);
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  font-size:22px;
 }
 
 .title{
@@ -113,8 +110,6 @@ select,
   font-size:17px;
 }
 
-/* CHAT */
-
 main{
   flex:1;
   overflow-y:auto;
@@ -132,13 +127,7 @@ main{
   height:75px;
   margin:auto;
   border-radius:25px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(145deg,#f2c867,#8d651f);
-  color:#111;
   font-size:38px;
-  font-weight:900;
   box-shadow:0 10px 45px rgba(214,168,79,.2);
 }
 
@@ -174,8 +163,6 @@ main{
   font-size:12px;
 }
 
-/* MESSAGES */
-
 .msg{
   max-width:88%;
   margin:12px 0;
@@ -188,14 +175,8 @@ main{
 }
 
 @keyframes appear{
-  from{
-    opacity:0;
-    transform:translateY(5px);
-  }
-  to{
-    opacity:1;
-    transform:none;
-  }
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:none}
 }
 
 .msg.user{
@@ -211,8 +192,20 @@ main{
 
 .msg img{
   max-width:100%;
+  max-height:280px;
+  object-fit:contain;
   border-radius:12px;
   margin-top:8px;
+}
+
+.attachment-preview{
+  margin-top:8px;
+  padding:8px 10px;
+  background:#191919;
+  border:1px solid #333;
+  border-radius:10px;
+  font-size:12px;
+  color:#bbb;
 }
 
 .sources{
@@ -228,9 +221,10 @@ main{
   color:var(--gold2);
   text-decoration:none;
   margin-top:5px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
-
-/* STATUS */
 
 .status{
   position:fixed;
@@ -241,9 +235,8 @@ main{
   font-size:11px;
   color:#888;
   pointer-events:none;
+  z-index:25;
 }
-
-/* COMPOSER */
 
 .composer-wrap{
   position:fixed;
@@ -305,7 +298,9 @@ textarea:focus{
   font-weight:900;
 }
 
-/* ATTACHMENT MENU */
+.send:disabled{
+  opacity:.5;
+}
 
 .attach-menu{
   display:none;
@@ -334,8 +329,6 @@ textarea:focus{
   background:#222;
 }
 
-/* TYPING */
-
 .typing{
   display:inline-flex;
   gap:4px;
@@ -349,20 +342,13 @@ textarea:focus{
   animation:b 1s infinite;
 }
 
-.typing span:nth-child(2){
-  animation-delay:.15s;
-}
-
-.typing span:nth-child(3){
-  animation-delay:.3s;
-}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
 
 @keyframes b{
   0%,100%{opacity:.2}
   50%{opacity:1}
 }
-
-/* TOAST */
 
 .toast{
   position:fixed;
@@ -379,43 +365,15 @@ textarea:focus{
   z-index:100;
 }
 
-/* MOBILE */
-
 @media(max-width:600px){
-
-  header{
-    height:62px;
-  }
-
-  .title{
-    font-size:18px;
-  }
-
-  .subtitle{
-    font-size:9px;
-  }
-
-  .logo{
-    width:38px;
-    height:38px;
-    border-radius:12px;
-  }
-
-  .welcome{
-    padding-top:35px;
-  }
-
-  .welcome h1{
-    font-size:28px;
-  }
-
-  .msg{
-    max-width:92%;
-  }
-
-  .status{
-    bottom:66px;
-  }
+  header{height:62px}
+  .title{font-size:18px}
+  .subtitle{font-size:9px}
+  .logo{width:38px;height:38px;border-radius:12px}
+  .welcome{padding-top:35px}
+  .welcome h1{font-size:28px}
+  .msg{max-width:92%}
+  .status{bottom:66px}
 }
 </style>
 </head>
@@ -425,20 +383,15 @@ textarea:focus{
 <div class="app">
 
 <header>
-
   <div class="brand">
-
     <div class="logo">✦</div>
-
     <div>
       <div class="title">Guru AI</div>
-      <div class="subtitle">Gemini 3.8 • Auto Fallback • Secure</div>
+      <div class="subtitle">Gemini • Auto Fallback • Secure</div>
     </div>
-
   </div>
 
   <div class="top-right">
-
     <select id="language">
       <option value="auto">Auto</option>
       <option value="hi">हिंदी</option>
@@ -447,65 +400,57 @@ textarea:focus{
     </select>
 
     <button class="icon-btn" id="clearBtn">⌫</button>
-
   </div>
-
 </header>
-
 
 <main id="chat">
 
-  <section class="welcome" id="welcome">
+<section class="welcome" id="welcome">
 
-    <div class="welcome-logo">✦</div>
+  <div class="welcome-logo">✦</div>
 
-    <h1>नमस्ते, <span>Guru AI</span></h1>
+  <h1>नमस्ते, <span>Guru AI</span></h1>
 
-    <p>
-      आपका AI Assistant<br>
-      Mobile Repair • Camera • PDF • Web Search • General AI
-    </p>
+  <p>
+    आपका AI Assistant<br>
+    Mobile Repair • Camera • PDF • Web Search • General AI
+  </p>
 
-    <div class="quick">
+  <div class="quick">
 
-      <button data-q="मेरे मोबाइल में चार्जिंग नहीं हो रही है, क्या चेक करूं?">
-        🔧 Mobile Repair
-      </button>
+    <button data-q="मेरे मोबाइल में चार्जिंग नहीं हो रही है, क्या चेक करूं?">
+      🔧 Mobile Repair
+    </button>
 
-      <button data-q="इस समस्या को आसान हिंदी में समझाओ">
-        🧠 Explain
-      </button>
+    <button data-q="इस समस्या को आसान हिंदी में समझाओ">
+      🧠 Explain
+    </button>
 
-      <button data-q="आज की महत्वपूर्ण जानकारी बताओ">
-        🌐 Web Search
-      </button>
+    <button data-q="आज की महत्वपूर्ण जानकारी बताओ">
+      🌐 Web Search
+    </button>
 
-      <button data-q="मेरे लिए एक professional message लिखो">
-        ✍️ Writing
-      </button>
+    <button data-q="मेरे लिए एक professional message लिखो">
+      ✍️ Writing
+    </button>
 
-    </div>
+  </div>
 
-  </section>
+</section>
 
 </main>
 
-
 <div class="status" id="status"></div>
-
 
 <div class="composer-wrap">
 
   <div class="attach-menu" id="attachMenu">
 
     <button id="cameraBtn">📷 Camera</button>
-
     <button id="galleryBtn">🖼️ Photos / Gallery</button>
-
     <button id="fileBtn">📄 PDF / File</button>
 
   </div>
-
 
   <div class="composer">
 
@@ -527,7 +472,6 @@ textarea:focus{
 
 </div>
 
-
 <input
   type="file"
   id="fileInput"
@@ -544,7 +488,6 @@ textarea:focus{
 >
 
 <div class="toast" id="toast"></div>
-
 
 <script>
 
@@ -572,7 +515,7 @@ let attachments = [];
 
 
 // -------------------------
-// UI
+// TOAST
 // -------------------------
 
 function showToast(text){
@@ -586,10 +529,18 @@ function showToast(text){
 }
 
 
+// -------------------------
+// STATUS
+// -------------------------
+
 function status(text){
   statusEl.textContent = text || "";
 }
 
+
+// -------------------------
+// SCROLL
+// -------------------------
 
 function scrollBottom(){
 
@@ -600,13 +551,66 @@ function scrollBottom(){
 }
 
 
-function addMessage(text, type, sources = []){
+// -------------------------
+// ADD MESSAGE
+// -------------------------
+
+function addMessage(
+  text,
+  type,
+  sources = [],
+  attachmentList = []
+){
 
   const div = document.createElement("div");
 
   div.className = "msg " + type;
 
   div.textContent = text;
+
+  if(attachmentList.length){
+
+    attachmentList.forEach(file => {
+
+      if(
+        file.mimeType &&
+        file.mimeType.startsWith("image/") &&
+        file.data
+      ){
+
+        const img =
+          document.createElement("img");
+
+        img.src = file.data;
+
+        img.alt =
+          "Attached image";
+
+        div.appendChild(img);
+
+      }else{
+
+        const box =
+          document.createElement("div");
+
+        box.className =
+          "attachment-preview";
+
+        box.textContent =
+          "📎 " +
+          (
+            file.name ||
+            file.mimeType ||
+            "Attachment"
+          );
+
+        div.appendChild(box);
+
+      }
+
+    });
+
+  }
 
   if(sources && sources.length){
 
@@ -643,6 +647,7 @@ function addMessage(text, type, sources = []){
     });
 
     div.appendChild(sourceBox);
+
   }
 
   chat.appendChild(div);
@@ -652,6 +657,10 @@ function addMessage(text, type, sources = []){
   return div;
 }
 
+
+// -------------------------
+// TYPING
+// -------------------------
 
 function addTyping(){
 
@@ -701,23 +710,25 @@ async function sendMessage(){
 
   welcome.style.display = "none";
 
+  const currentAttachments =
+    [...attachments];
+
   addMessage(
     text || "📎 Attachment",
-    "user"
+    "user",
+    [],
+    currentAttachments
   );
 
   messages.push({
     role:"user",
     text:text,
-    attachments:attachments
+    attachments:currentAttachments
   });
 
   input.value = "";
 
   input.style.height = "auto";
-
-  const currentAttachments =
-    attachments;
 
   attachments = [];
 
@@ -755,8 +766,14 @@ async function sendMessage(){
       });
 
 
-    const data =
-      await response.json();
+    let data = {};
+
+    try{
+
+      data =
+        await response.json();
+
+    }catch(_){}
 
 
     removeTyping();
@@ -815,9 +832,7 @@ async function sendMessage(){
       "ai"
     );
 
-    status(
-      "Connection / API limit"
-    );
+    status("Connection / API error");
 
   }finally{
 
@@ -859,8 +874,7 @@ input.addEventListener(
   "input",
   function(){
 
-    this.style.height =
-      "auto";
+    this.style.height = "auto";
 
     this.style.height =
       Math.min(
@@ -873,7 +887,7 @@ input.addEventListener(
 
 
 // -------------------------
-// SEND BUTTON
+// SEND
 // -------------------------
 
 sendBtn.addEventListener(
@@ -888,7 +902,9 @@ sendBtn.addEventListener(
 
 plusBtn.addEventListener(
   "click",
-  function(){
+  function(e){
+
+    e.stopPropagation();
 
     attachMenu.style.display =
       attachMenu.style.display === "block"
@@ -900,7 +916,7 @@ plusBtn.addEventListener(
 
 
 // -------------------------
-// FILE UPLOAD
+// FILE BUTTON
 // -------------------------
 
 document.getElementById(
@@ -909,8 +925,7 @@ document.getElementById(
   "click",
   function(){
 
-    attachMenu.style.display =
-      "none";
+    attachMenu.style.display = "none";
 
     fileInput.click();
 
@@ -928,8 +943,7 @@ document.getElementById(
   "click",
   function(){
 
-    attachMenu.style.display =
-      "none";
+    attachMenu.style.display = "none";
 
     fileInput.click();
 
@@ -947,8 +961,7 @@ document.getElementById(
   "click",
   function(){
 
-    attachMenu.style.display =
-      "none";
+    attachMenu.style.display = "none";
 
     cameraInput.click();
 
@@ -969,15 +982,11 @@ function readFile(file){
         new FileReader();
 
       reader.onload =
-        () => resolve(
-          reader.result
-        );
+        () => resolve(reader.result);
 
       reader.onerror =
         () => reject(
-          new Error(
-            "File read failed"
-          )
+          new Error("File read failed")
         );
 
       reader.readAsDataURL(file);
@@ -988,13 +997,15 @@ function readFile(file){
 }
 
 
+// -------------------------
+// HANDLE FILE
+// -------------------------
+
 async function handleFile(file){
 
   if(!file) return;
 
-  status(
-    "File तैयार हो रही है..."
-  );
+  status("File तैयार हो रही है...");
 
   try{
 
@@ -1002,6 +1013,9 @@ async function handleFile(file){
       await readFile(file);
 
     attachments.push({
+
+      name:
+        file.name,
 
       mimeType:
         file.type ||
@@ -1012,11 +1026,14 @@ async function handleFile(file){
     });
 
     showToast(
-      "📎 File तैयार है — अब भेजें"
+      "📎 " +
+      file.name +
+      " तैयार है — अब भेजें"
     );
 
     status(
-      file.name || "Attachment ready"
+      file.name +
+      " ready"
     );
 
   }catch(error){
@@ -1063,7 +1080,7 @@ cameraInput.addEventListener(
 
 
 // -------------------------
-// VOICE INPUT
+// VOICE
 // -------------------------
 
 micBtn.addEventListener(
@@ -1096,42 +1113,32 @@ micBtn.addEventListener(
 
     if(selected === "en"){
 
-      recognition.lang =
-        "en-IN";
+      recognition.lang = "en-IN";
 
-    }else if(
-      selected === "es"
-    ){
+    }else if(selected === "es"){
 
-      recognition.lang =
-        "es-ES";
+      recognition.lang = "es-ES";
 
     }else{
 
-      recognition.lang =
-        "hi-IN";
+      recognition.lang = "hi-IN";
 
     }
 
 
-    recognition.interimResults =
-      false;
+    recognition.interimResults = false;
 
-    recognition.maxAlternatives =
-      1;
+    recognition.maxAlternatives = 1;
 
 
-    status(
-      "🎙️ बोलिए..."
-    );
+    status("🎙️ बोलिए...");
 
 
     recognition.onresult =
       function(event){
 
         const spoken =
-          event.results[0][0]
-            .transcript;
+          event.results[0][0].transcript;
 
         input.value +=
           spoken + " ";
@@ -1140,9 +1147,7 @@ micBtn.addEventListener(
           new Event("input")
         );
 
-        status(
-          "Voice text तैयार है"
-        );
+        status("Voice text तैयार है");
 
       };
 
@@ -1150,9 +1155,7 @@ micBtn.addEventListener(
     recognition.onerror =
       function(){
 
-        status(
-          "Voice input बंद हो गया"
-        );
+        status("Voice input बंद हो गया");
 
       };
 
@@ -1167,7 +1170,17 @@ micBtn.addEventListener(
       };
 
 
-    recognition.start();
+    try{
+
+      recognition.start();
+
+    }catch(error){
+
+      showToast(
+        "Voice पहले से चालू है"
+      );
+
+    }
 
   }
 );
@@ -1214,12 +1227,9 @@ clearBtn.addEventListener(
 
     chat.innerHTML = "";
 
-    chat.appendChild(
-      welcome
-    );
+    chat.appendChild(welcome);
 
-    welcome.style.display =
-      "block";
+    welcome.style.display = "block";
 
     status("");
 
@@ -1232,7 +1242,7 @@ clearBtn.addEventListener(
 
 
 // -------------------------
-// CLOSE MENU OUTSIDE
+// CLOSE MENU
 // -------------------------
 
 document.addEventListener(
@@ -1244,8 +1254,7 @@ document.addEventListener(
       e.target !== plusBtn
     ){
 
-      attachMenu.style.display =
-        "none";
+      attachMenu.style.display = "none";
 
     }
 
